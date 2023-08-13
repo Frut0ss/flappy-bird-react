@@ -1,9 +1,18 @@
+// Bird.js
 import React from 'react';
+import birdImage from '../static/Avatar.png';
 
-function Bird({ birdY }) {
+function Bird({ birdY, birdX }) {
+  const birdStyle = {
+    position: 'absolute',
+    width: '50px',
+    height: '50px',
+    top: birdY,
+    left: birdX,
+  };
+
   return (
-    <div style={{ position: 'absolute', bottom: birdY, width: '50px', height: '50px', backgroundColor: 'yellow' }}>
-    </div>
+    <img src={birdImage} alt="Bird" style={birdStyle} />
   );
 }
 

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Bird from './components/bird';
 import Pipe from './components/pipe';
 import fondo from './static/fondo.jpg';
+import Menu from './components/menu';
+
 
 function App() {
   const GAP_HEIGHT = 150;
@@ -13,6 +15,61 @@ function App() {
   const BIRD_WIDTH = 40;
   const GRAVITY = 1;
   const FLAP_POWER = 15;
+ 
+  const [flash, setFlash] = useState(false);
+  const [birdImage, setBirdImage] = useState(null); // Si tienes una imagen predeterminada del pájaro, puedes ponerla aquí.
+  const [background, setBackground] = useState(fondo);
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
+
+const customizeBird = () => {
+    // Crear un input de tipo file
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';  // Aceptar solo imágenes
+
+    // Escuchar el evento 'change' para cuando el usuario haya seleccionado un archivo
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Utilizar FileReader para convertir la imagen a URL de datos (base64)
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // Establecer la URL de datos como imagen del pájaro
+                setBirdImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Disparar la selección de archivo
+    fileInput.click();
+};
+
+  const customizeBackground = () => {
+    // Crear un input de tipo file
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';  // Aceptar solo imágenes
+
+    // Escuchar el evento 'change' para cuando el usuario haya seleccionado un archivo
+    fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        // Utilizar FileReader para convertir la imagen a URL de datos (base64)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            // Establecer la URL de datos como imagen del pájaro
+            setBackground(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Disparar la selección de archivo
+fileInput.click();
+  };
+
+
 
   const [hasStarted, setHasStarted] = useState(false);
   const [birdY, setBirdY] = useState(300);
@@ -86,10 +143,12 @@ function App() {
   const checkCollision = () => {
     for (let pipe of pipes) {
       if (
-        (birdY + 35 <= pipe.gapPosition || birdY + BIRD_HEIGHT - 35 >= pipe.gapPosition + GAP_HEIGHT) &&
-        birdX + BIRD_WIDTH - 35 >= pipe.position &&
-        birdX + 35 <= pipe.position + PIPE_WIDTH
+        (birdY + 0 <= pipe.gapPosition || birdY + BIRD_HEIGHT - 0 >= pipe.gapPosition + GAP_HEIGHT) &&
+        birdX + BIRD_WIDTH - 0 >= pipe.position &&
+        birdX + 0 <= pipe.position + PIPE_WIDTH
       ) {
+        setFlash(true);
+        setTimeout(() => setFlash(false), 300); // Desactiva el flashazo después de 300ms
         return true;
       }
     }
@@ -107,26 +166,71 @@ function App() {
   };
 
   return (
-    <div style={{ backgroundImage: `url(${fondo})`, height: '100vh', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', position: 'relative' }}>
-      <Bird birdY={birdY} birdX={birdX} />
-      {pipes.map((pipe, index) => <Pipe key={index} height={pipe.gapPosition} position={pipe.position} />)}
-      {isGameOver && (
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
-            <h1>Game Over</h1>
-            <p>Total Score: {score}</p> {/* Agregamos el puntaje total */}
-            <button onClick={restartGame}>Restart</button>
-        </div>
+    <div style={{ backgroundImage: `url(${background})`, height: '100vh', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', position: 'relative' }}>
+      
+      {isMenuOpen ? (
+        <Menu 
+          onStart={() => setIsMenuOpen(false)}
+          onCustomizeBird={customizeBird}
+          onCustomizeBackground={customizeBackground}
+        />
+      ) : (
+        <>
+          <Bird birdY={birdY} birdX={birdX} birdImage={birdImage} />
+          {pipes.map((pipe, index) => <Pipe key={index} height={pipe.gapPosition} position={pipe.position} />)}
+          
+          {isGameOver && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
+              <h1>Jueguito terminado</h1>
+              <p>Puntuación total: {score}</p>
+              <button 
+                onClick={restartGame} 
+                style={{
+                  backgroundColor: '#f08a5d',
+                  border: 'none',
+                  color: 'white',
+                  padding: '10px 15px',
+                  borderRadius: '5px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'background-color 0.3s ease',
+                  '&:hover': {
+                  backgroundColor: '#b83b5e'
+                }
+              }}
+>
+    Reiniciar
+</button>
+            </div>
+          )}
+  
+          {!hasStarted && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
+              <h1>Presiona flecha hacia arriba o flecha hacia abajo para empezar</h1>
+            </div>
+          )}
+  
+          <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '24px', color: 'white', zIndex: 1000 }}>
+            Score: {score}
+          </div>
+        </>
       )}
-      {!hasStarted && (
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
-          <h1>Presiona flecha hacia arriba o flecha hacia abajo para empezar</h1>
-        </div>
-      )}
-      <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '24px', color: 'white', zIndex: 1000 }}>
-        Score: {score}
-      </div>
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          backgroundColor: 'red', 
+          opacity: flash ? 1 : 0,
+          transition: 'opacity 300ms ease',
+          pointerEvents: 'none' // Asegúrate de que este div no interfiera con los clics
+        }} 
+        ></div>
     </div>
-  );
+  );  
 }
 
 export default App;

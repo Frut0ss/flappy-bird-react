@@ -1,8 +1,8 @@
 // Bird.js
 import React from 'react';
-import birdImage from '../static/Avatar.png';
+import birdImageDefault from '../static/pajaro.png';
 
-function Bird({ birdY, birdX }) {
+function Bird({ birdY, birdX, birdImage }) {
   const birdStyle = {
     position: 'absolute',
     width: '50px',
@@ -12,7 +12,7 @@ function Bird({ birdY, birdX }) {
   };
 
   return (
-    <img src={birdImage} alt="Bird" style={birdStyle} />
+    <img src={birdImage || birdImageDefault} alt="Bird" style={birdStyle} />
   );
 }
 

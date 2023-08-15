@@ -4,6 +4,7 @@ import Bird from './components/bird';
 import Pipe from './components/pipe';
 import fondo from './static/fondo.jpg';
 import Menu from './components/menu';
+import Part2 from './components/part2';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
   const GRAVITY = 1;
   const FLAP_POWER = 15;
  
+  const [currentGame, setCurrentGame] = useState('flappybird');  // Nuevo estado para manejar el juego activo
   const [flash, setFlash] = useState(false);
   const [birdImage, setBirdImage] = useState(null); // Si tienes una imagen predeterminada del pájaro, puedes ponerla aquí.
   const [background, setBackground] = useState(fondo);
@@ -96,49 +98,52 @@ fileInput.click();
     window.addEventListener('keydown', handleKeyDown);
 
     const gameInterval = setInterval(() => {
-      if (hasStarted && !isGameOver) {
-        setBirdY(prev => prev + birdVelocity);
-        setBirdVelocity(prev => prev + GRAVITY);
-        setBirdX(prev => prev + horizontalSpeed); // Actualizamos la posición horizontal
+        if (hasStarted && !isGameOver) {
+            setBirdY(prev => prev + birdVelocity);
+            setBirdVelocity(prev => prev + GRAVITY);
+            setBirdX(prev => prev + horizontalSpeed); // Actualizamos la posición horizontal
 
-        if (birdY <= 0 || birdY + BIRD_HEIGHT >= window.innerHeight) {
-          setIsGameOver(true);
-          return;
-        }
-
-        setPipes(prevPipes => {
-          const newPipes = prevPipes.map(pipe => ({ ...pipe, position: pipe.position - 5 }));
-
-          const lastPipePosition = newPipes[newPipes.length - 1].position;
-          if (lastPipePosition <= window.innerWidth - PIPE_SPACING) {
-            const newPipe = {
-              position: window.innerWidth,
-              gapPosition: Math.floor(Math.random() * (window.innerHeight - GAP_HEIGHT))
-            };
-            newPipes.push(newPipe);
-          }
-
-          for (let pipe of newPipes) {
-            if (birdX > pipe.position + PIPE_WIDTH && !pipe.counted) {
-              pipe.counted = true;
-              setScore(prevScore => prevScore + 20);
+            if (birdY <= 0 || birdY + BIRD_HEIGHT >= window.innerHeight) {
+                setIsGameOver(true);
+                return;
             }
-          }
 
-          return newPipes.filter(pipe => pipe.position > -PIPE_WIDTH);
-        });
+            setPipes(prevPipes => {
+                const newPipes = prevPipes.map(pipe => ({ ...pipe, position: pipe.position - 5 }));
 
-        if (checkCollision()) {
-          setIsGameOver(true);
+                const lastPipePosition = newPipes[newPipes.length - 1].position;
+                if (lastPipePosition <= window.innerWidth - PIPE_SPACING) {
+                    const newPipe = {
+                        position: window.innerWidth,
+                        gapPosition: Math.floor(Math.random() * (window.innerHeight - GAP_HEIGHT))
+                    };
+                    newPipes.push(newPipe);
+                }
+
+                for (let pipe of newPipes) {
+                    if (birdX > pipe.position + PIPE_WIDTH && !pipe.counted) {
+                        pipe.counted = true;
+                        setScore(prevScore => prevScore + 20);
+                    }
+                }
+                if (score >= 40) {
+                  setCurrentGame('part2');
+              }
+
+                return newPipes.filter(pipe => pipe.position > -PIPE_WIDTH);
+            });
+
+            if (checkCollision()) {
+                setIsGameOver(true);
+            }
         }
-      }
     }, 20);
 
     return () => {
-      clearInterval(gameInterval);
-      window.removeEventListener('keydown', handleKeyDown);
+        clearInterval(gameInterval);
+        window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [birdVelocity, isGameOver, hasStarted, birdY, birdX]); // Agregamos birdX
+}, [birdVelocity, isGameOver, hasStarted, birdY, birdX, handleKeyDown, score]);
 
   const checkCollision = () => {
     for (let pipe of pipes) {
@@ -167,70 +172,75 @@ fileInput.click();
 
   return (
     <div style={{ backgroundImage: `url(${background})`, height: '100vh', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', position: 'relative' }}>
-      
-      {isMenuOpen ? (
-        <Menu 
-          onStart={() => setIsMenuOpen(false)}
-          onCustomizeBird={customizeBird}
-          onCustomizeBackground={customizeBackground}
-        />
-      ) : (
+        
+      {currentGame === 'flappybird' ? (
         <>
-          <Bird birdY={birdY} birdX={birdX} birdImage={birdImage} />
-          {pipes.map((pipe, index) => <Pipe key={index} height={pipe.gapPosition} position={pipe.position} />)}
-          
-          {isGameOver && (
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
-              <h1>Jueguito terminado</h1>
-              <p>Puntuación total: {score}</p>
-              <button 
-                onClick={restartGame} 
-                style={{
-                  backgroundColor: '#f08a5d',
-                  border: 'none',
-                  color: 'white',
-                  padding: '10px 15px',
-                  borderRadius: '5px',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'background-color 0.3s ease',
-                  '&:hover': {
-                  backgroundColor: '#b83b5e'
-                }
-              }}
->
-    Reiniciar
-</button>
-            </div>
+          {isMenuOpen ? (
+            <Menu 
+              onStart={() => setIsMenuOpen(false)}
+              onCustomizeBird={customizeBird}
+              onCustomizeBackground={customizeBackground}
+            />
+          ) : (
+            <>
+              <Bird birdY={birdY} birdX={birdX} birdImage={birdImage} />
+              {pipes.map((pipe, index) => <Pipe key={index} height={pipe.gapPosition} position={pipe.position} />)}
+              
+              {isGameOver && (
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
+                  <h1>Jueguito terminado</h1>
+                  <p>Puntuación total: {score}</p>
+                  <button 
+                    onClick={restartGame} 
+                    style={{
+                      backgroundColor: '#f08a5d',
+                      border: 'none',
+                      color: 'white',
+                      padding: '10px 15px',
+                      borderRadius: '5px',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      transition: 'background-color 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: '#b83b5e'
+                      }
+                    }}
+                  >
+                    Reiniciar
+                  </button>
+                </div>
+              )}
+      
+              {!hasStarted && (
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
+                  <h1>Presiona flecha hacia arriba o flecha hacia abajo para empezar</h1>
+                </div>
+              )}
+      
+              <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '24px', color: 'white', zIndex: 1000 }}>
+                Score: {score}
+              </div>
+            </>
           )}
-  
-          {!hasStarted && (
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 1000, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '20px', borderRadius: '8px' }}>
-              <h1>Presiona flecha hacia arriba o flecha hacia abajo para empezar</h1>
-            </div>
-          )}
-  
-          <div style={{ position: 'absolute', top: '10px', left: '10px', fontSize: '24px', color: 'white', zIndex: 1000 }}>
-            Score: {score}
-          </div>
+          <div 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'red', 
+              opacity: flash ? 1 : 0,
+              transition: 'opacity 300ms ease',
+              pointerEvents: 'none' 
+            }} 
+          ></div>
         </>
+      ) : (
+        <Part2 />
       )}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          backgroundColor: 'red', 
-          opacity: flash ? 1 : 0,
-          transition: 'opacity 300ms ease',
-          pointerEvents: 'none' // Asegúrate de que este div no interfiera con los clics
-        }} 
-        ></div>
     </div>
-  );  
-}
-
+  );
+} 
 export default App;

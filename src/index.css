@@ -12,3 +12,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* styles.css (o en tu archivo CSS correspondiente) */
+@keyframes attackAnimation {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes damageAnimation {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+

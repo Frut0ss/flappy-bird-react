@@ -51,7 +51,7 @@ function Menu({ onStart, onCustomizeBird, onCustomizeBackground }) {
     return (
         <div style={menuStyle}>
             <div style={imageContainerStyle}>
-                <span style={casiTextStyle}>CASI</span>
+                <span style={casiTextStyle}>CASItest</span>
             </div>
             <h1>Bienvenido al juego</h1>
             <button style={buttonStyle} onClick={onStart}>Empezar juego</button>
